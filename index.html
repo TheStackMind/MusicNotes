@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Note Explorer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <section id="screen-home" class="screen active">
+    <h1>🎵 Note Explorer 🎵</h1>
+    <p class="subtitle">Let's learn music notes!</p>
+
+    <div class="mode-grid">
+      <button class="mode-card" data-mode="letter">
+        <span class="mode-emoji">🔤</span>
+        <span class="mode-title">Name That Note!</span>
+        <span class="mode-desc">See a note, pick its letter</span>
+      </button>
+      <button class="mode-card" data-mode="place">
+        <span class="mode-emoji">🎯</span>
+        <span class="mode-title">Place the Note!</span>
+        <span class="mode-desc">Hear a letter, tap the staff</span>
+      </button>
+    </div>
+
+    <div class="difficulty-row">
+      <span class="difficulty-label">How many notes?</span>
+      <div class="difficulty-buttons">
+        <button class="diff-btn active" data-diff="easy">5 notes (C–G)</button>
+        <button class="diff-btn" data-diff="all">8 notes (C–C)</button>
+      </div>
+    </div>
+
+    <div class="home-stars">Total stars earned: <span id="home-star-count">0</span> ⭐</div>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <header class="game-header">
+      <button id="btn-home" class="icon-btn" title="Home">🏠</button>
+      <div class="score"><span id="star-count">0</span> ⭐</div>
+      <button id="btn-hear" class="icon-btn" title="Hear the note">🔊</button>
+    </header>
+
+    <div id="prompt-area"></div>
+
+    <div id="staff-wrap">
+      <svg id="staff-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <div id="answer-area"></div>
+
+    <div id="feedback"></div>
+  </section>
+
+</div>
+
+<div id="confetti-layer"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
