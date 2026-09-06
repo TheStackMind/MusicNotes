@@ -171,7 +171,6 @@ function drawNoteAt(step, { x = NOTE_X, cls = '' } = {}) {
 
   const head = el('ellipse', {
     cx: x, cy: y, rx: 10, ry: 7.5,
-    transform: `rotate(-18 ${x} ${y})`,
     fill: '#2d2a4a',
     class: `note-head ${cls}`,
   });
