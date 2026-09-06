@@ -208,7 +208,7 @@ h1 {
   touch-action: manipulation;
 }
 
-#staff-svg.clickable { cursor: pointer; }
+#staff-svg.clickable { cursor: pointer; touch-action: none; }
 
 .staff-line { stroke: var(--ink); stroke-width: 2; }
 .ledger-line { stroke: var(--ink); stroke-width: 2; }
@@ -219,6 +219,7 @@ h1 {
   transform-origin: center;
 }
 
+.note-head.ghost { fill: #b9b3d9; }
 .note-head.correct { fill: var(--green) !important; }
 .note-head.wrong { fill: var(--red) !important; }
 .note-head.reveal { fill: var(--yellow) !important; }

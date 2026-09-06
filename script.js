@@ -46,6 +46,7 @@ const state = {
   stars: 0,
   totalStars: Number(localStorage.getItem('noteExplorerStars') || 0),
   awaitingNext: false,
+  dragging: false,
   timers: [],
 };
 
@@ -129,6 +130,7 @@ document.querySelectorAll('.diff-btn').forEach((btn) => {
 document.getElementById('btn-home').addEventListener('click', () => {
   clearAllTimers();
   state.awaitingNext = false;
+  state.dragging = false;
   showScreen('screen-home');
   document.getElementById('home-star-count').textContent = state.totalStars;
 });
@@ -153,26 +155,22 @@ function drawStaffBase() {
   lineYs.forEach((y) => {
     svg.appendChild(el('line', { x1: 60, y1: y, x2: 370, y2: y, class: 'staff-line' }));
   });
-  // treble clef, drawn as a path so it renders identically on every
-  // device instead of depending on a font having the Unicode glyph
-  svg.appendChild(el('path', {
-    d: `M30,0
-        C14,0 8,10 10,20
-        C12,30 26,34 34,26
-        C40,20 38,8 26,6
-        C16,4 6,14 8,30
-        C10,46 24,52 22,68
-        C20,84 8,90 10,106
-        C12,118 24,120 26,132
-        C28,142 18,150 10,146
-        C4,144 4,136 12,134`,
+  // treble clef, drawn as SVG shapes (a ring + two smooth strokes + a dot)
+  // so it renders identically on every device instead of depending on a
+  // font having the Unicode musical-symbol glyph
+  const clef = el('g', {
+    transform: 'translate(58,2)',
     fill: 'none',
     stroke: '#2d2a4a',
-    'stroke-width': 4.5,
+    'stroke-width': 5,
     'stroke-linecap': 'round',
     'stroke-linejoin': 'round',
-    transform: 'translate(58,20)',
-  }));
+  });
+  clef.appendChild(el('circle', { cx: 27, cy: 24, r: 13 }));
+  clef.appendChild(el('path', { d: 'M20,12 C24,-4 40,-2 34,14' }));
+  clef.appendChild(el('path', { d: 'M34,30 C42,42 12,50 20,70 C28,90 6,96 12,116 C14,128 26,130 24,142' }));
+  clef.appendChild(el('circle', { cx: 21, cy: 148, r: 4.5, fill: '#2d2a4a', stroke: 'none' }));
+  svg.appendChild(clef);
 }
 
 function drawNoteAt(step, { x = NOTE_X, cls = '' } = {}) {
@@ -238,9 +236,11 @@ function nextRound() {
     state.currentNote = pickRandom(pool);
     svg.classList.add('clickable');
     setPrompt(
-      `<span class="prompt-text">Tap the staff for</span><span class="letter-card">${state.currentNote.letter}</span>`
+      `<span class="prompt-text">Drag the note to</span><span class="letter-card">${state.currentNote.letter}</span>`
     );
     document.getElementById('answer-area').innerHTML = '';
+    const startStep = Math.round((pool[0].step + pool[pool.length - 1].step) / 2);
+    drawNoteAt(startStep, { cls: 'ghost' });
   }
 }
 
@@ -275,8 +275,7 @@ function handleLetterAnswer(letter, btn) {
   }
 }
 
-svg.addEventListener('click', (e) => {
-  if (state.mode !== 'place' || state.awaitingNext) return;
+function stepFromPointer(e) {
   const pt = svg.createSVGPoint();
   pt.x = e.clientX;
   pt.y = e.clientY;
@@ -287,11 +286,31 @@ svg.addEventListener('click', (e) => {
   const maxStep = pool[pool.length - 1].step;
 
   let step = Math.round((140 - svgPt.y) / 10);
-  step = Math.max(minStep, Math.min(maxStep, step));
+  return Math.max(minStep, Math.min(maxStep, step));
+}
 
+svg.addEventListener('pointerdown', (e) => {
+  if (state.mode !== 'place' || state.awaitingNext) return;
+  state.dragging = true;
+  svg.setPointerCapture(e.pointerId);
   clearNotes();
-  const tappedLetter = NOTES[step].letter;
-  const correct = tappedLetter === state.currentNote.letter;
+  drawNoteAt(stepFromPointer(e), { cls: 'ghost' });
+});
+
+svg.addEventListener('pointermove', (e) => {
+  if (!state.dragging) return;
+  clearNotes();
+  drawNoteAt(stepFromPointer(e), { cls: 'ghost' });
+});
+
+function finishDrag(e) {
+  if (!state.dragging) return;
+  state.dragging = false;
+
+  const step = stepFromPointer(e);
+  clearNotes();
+  const droppedLetter = NOTES[step].letter;
+  const correct = droppedLetter === state.currentNote.letter;
   const head = drawNoteAt(step, { cls: correct ? 'correct' : 'wrong' });
   head.classList.add('pop');
 
@@ -304,10 +323,16 @@ svg.addEventListener('click', (e) => {
     scheduleTimeout(() => {
       if (!state.awaitingNext) {
         clearNotes();
+        const pool = noteSetFor(state.difficulty);
+        const startStep = Math.round((pool[0].step + pool[pool.length - 1].step) / 2);
+        drawNoteAt(startStep, { cls: 'ghost' });
       }
     }, 600);
   }
-});
+}
+
+svg.addEventListener('pointerup', finishDrag);
+svg.addEventListener('pointercancel', finishDrag);
 
 function onCorrect() {
   state.stars++;
