@@ -153,10 +153,26 @@ function drawStaffBase() {
   lineYs.forEach((y) => {
     svg.appendChild(el('line', { x1: 60, y1: y, x2: 370, y2: y, class: 'staff-line' }));
   });
-  // treble clef glyph
-  const clef = el('text', { x: 55, y: 118, 'font-size': 92, 'text-anchor': 'end', fill: '#2d2a4a' });
-  clef.textContent = '\u{1D11E}';
-  svg.appendChild(clef);
+  // treble clef, drawn as a path so it renders identically on every
+  // device instead of depending on a font having the Unicode glyph
+  svg.appendChild(el('path', {
+    d: `M30,0
+        C14,0 8,10 10,20
+        C12,30 26,34 34,26
+        C40,20 38,8 26,6
+        C16,4 6,14 8,30
+        C10,46 24,52 22,68
+        C20,84 8,90 10,106
+        C12,118 24,120 26,132
+        C28,142 18,150 10,146
+        C4,144 4,136 12,134`,
+    fill: 'none',
+    stroke: '#2d2a4a',
+    'stroke-width': 4.5,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    transform: 'translate(58,20)',
+  }));
 }
 
 function drawNoteAt(step, { x = NOTE_X, cls = '' } = {}) {
